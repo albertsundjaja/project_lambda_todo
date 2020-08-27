@@ -14,6 +14,9 @@ provider:
 
   environment:
       TODOS_TABLE: Todos-${self:provider.stage}
+      TODOS_SECONDARY_INDEX: TodosUserIdIndex
+      IMAGES_S3_BUCKET: serverless-todos-alb123123-images-${self:provider.stage}
+      SIGNED_URL_EXPIRATION: 300
 
   iamRoleStatements:
     - Effect: Allow
@@ -23,7 +26,17 @@ provider:
         - dynamodb:GetItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
+        - dynamodb:Query
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_SECONDARY_INDEX}
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+        - s3:GetObject
+      Resource: arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*
 
 functions:
 
@@ -38,6 +51,7 @@ functions:
           method: get
           path: todos
           cors: true
+          authorizer: Auth
 
   # TODO: Configure this function
   CreateTodo:
@@ -57,6 +71,7 @@ functions:
           method: patch
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
 
   # TODO: Configure this function
   DeleteTodo:
@@ -66,14 +81,16 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
+          authorizer: Auth
 
-  # # TODO: Configure this function
-  # GenerateUploadUrl:
-  #   handler: src/lambda/http/generateUploadUrl.handler
-  #   events:
-  #     - http:
-  #         method: post
-  #         path: todos/{todoId}/attachment
+  # TODO: Configure this function
+  GenerateUploadUrl:
+    handler: src/lambda/http/generateUploadUrl.handler
+    events:
+      - http:
+          method: post
+          cors: true
+          path: todos/{todoId}/attachment
 
 resources:
   Resources:
@@ -82,8 +99,8 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          # - AttributeName: userId
-          #   AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
           - AttributeName: todoId
             AttributeType: S
           # - AttributeName: createdAt
@@ -103,3 +120,44 @@ resources:
           #   KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODOS_SECONDARY_INDEX}
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL # What attributes will be copied to an index
+
+    AttachmentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.IMAGES_S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: 'arn:aws:s3:::${self:provider.environment.IMAGES_S3_BUCKET}/*'
+        Bucket: !Ref AttachmentsBucket
+    

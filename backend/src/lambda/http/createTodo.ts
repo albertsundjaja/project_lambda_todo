@@ -6,6 +6,8 @@ import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
 
 import { TodoItem } from '../../models/TodoItem'
 
+import { parseUserId } from '../../auth/utils'
+
 import * as AWS  from 'aws-sdk'
 import * as uuid from 'uuid';
 
@@ -15,12 +17,17 @@ const todosTable = process.env.TODOS_TABLE
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
 
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const userId = parseUserId(jwtToken)
+
   const now = new Date().toISOString()
   const todoId = uuid.v4()
   // TODO: Implement creating a new TODO item
   const putTodo: TodoItem = {
     ...newTodo,
-      userId: '',
+      userId: userId,
       todoId: todoId,
       createdAt: now,
       done: false,
