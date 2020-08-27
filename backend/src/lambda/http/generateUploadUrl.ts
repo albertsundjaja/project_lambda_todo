@@ -27,7 +27,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         AttributeUpdates: {
             attachmentUrl: {
                 Action: 'PUT',
-                Value: `${bucketName}.s3.amazonaws.com/${todoId}`
+                Value: `https://${bucketName}.s3.amazonaws.com/${todoId}`
             }
         }
     }).promise()
