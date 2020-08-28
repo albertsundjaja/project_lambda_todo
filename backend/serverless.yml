@@ -8,6 +8,10 @@ plugins:
 provider:
   name: aws
   runtime: nodejs10.x
+  
+  tracing:
+    lambda: true
+    apiGateway: true
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}

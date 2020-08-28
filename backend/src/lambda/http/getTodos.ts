@@ -6,15 +6,20 @@ import * as AWS  from 'aws-sdk'
 import { parseUserId } from '../../auth/utils'
 
 import { createLogger } from '../../utils/logger'
+import * as AWSXRay from 'aws-xray-sdk'
+
+const XAWS = AWSXRay.captureAWS(AWS)
 
 const logger = createLogger('auth')
 
-const docClient = new AWS.DynamoDB.DocumentClient()
+const docClient = new XAWS.DynamoDB.DocumentClient()
 const todosTable = process.env.TODOS_TABLE
 const userIdIndex = process.env.TODOS_SECONDARY_INDEX
+const cloudwatch = new XAWS.CloudWatch();
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.log('Processing event: ', event)
+  const startTime = new Date().getTime()
   // TODO: Get all TODO items for a current user
 
   const authorization = event.headers.Authorization
@@ -30,6 +35,27 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     ExpressionAttributeValues: {
         ':userId': userId
     }
+  }).promise()
+
+  const endTime = new Date().getTime()
+  const totalTime = endTime - startTime
+
+  // metric log
+  await cloudwatch.putMetricData({
+    MetricData: [
+      {
+        MetricName: 'Latency',
+        Dimensions: [
+          {
+            Name: 'ServiceName',
+            Value: 'Todos/GetTodos'
+          }
+        ],
+        Unit: 'Milliseconds',
+        Value: totalTime
+      }
+    ],
+    Namespace: 'Serverless/Todos'
   }).promise()
 
   const items = result.Items

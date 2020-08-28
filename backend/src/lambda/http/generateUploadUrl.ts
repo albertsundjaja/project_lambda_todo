@@ -1,13 +1,15 @@
 import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
+import * as AWSXRay from 'aws-xray-sdk'
 
+const XAWS = AWSXRay.captureAWS(AWS)
 import * as AWS  from 'aws-sdk'
-const s3 = new AWS.S3({
+const s3 = new XAWS.S3({
     signatureVersion: 'v4'
 })
 
-const docClient = new AWS.DynamoDB.DocumentClient()
+const docClient = new XAWS.DynamoDB.DocumentClient()
 const todosTable = process.env.TODOS_TABLE
 
 const bucketName = process.env.IMAGES_S3_BUCKET

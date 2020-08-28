@@ -10,8 +10,12 @@ import { parseUserId } from '../../auth/utils'
 
 import * as AWS  from 'aws-sdk'
 import * as uuid from 'uuid';
+import * as AWSXRay from 'aws-xray-sdk'
+import { createLogger } from '../../utils/logger'
 
-const docClient = new AWS.DynamoDB.DocumentClient()
+const logger = createLogger('auth')
+const XAWS = AWSXRay.captureAWS(AWS)
+const docClient = new XAWS.DynamoDB.DocumentClient()
 const todosTable = process.env.TODOS_TABLE
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -21,6 +25,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const split = authorization.split(' ')
   const jwtToken = split[1]
   const userId = parseUserId(jwtToken)
+
+  logger.info(`${userId} create todo`)
 
   const now = new Date().toISOString()
   const todoId = uuid.v4()
