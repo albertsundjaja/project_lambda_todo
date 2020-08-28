@@ -1,6 +1,4 @@
 import {TodosAccess} from '../dataLayer/todosAccess'
-import * as AWS  from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
 import * as uuid from 'uuid';
 
 import { TodoItem } from '../models/TodoItem'
