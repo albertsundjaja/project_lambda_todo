@@ -8,7 +8,7 @@ plugins:
 provider:
   name: aws
   runtime: nodejs10.x
-  
+
   tracing:
     lambda: true
     apiGateway: true
@@ -107,8 +107,8 @@ resources:
             AttributeType: S
           - AttributeName: todoId
             AttributeType: S
-          # - AttributeName: createdAt
-          #   AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
           # - AttributeName: name
           #   AttributeType: S
           # - AttributeName: dueDate
@@ -120,8 +120,8 @@ resources:
         KeySchema:
           - AttributeName: todoId
             KeyType: HASH
-          # - AttributeName: createdAt
-          #   KeyType: RANGE
+          - AttributeName: createdAt
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODOS_TABLE}
         GlobalSecondaryIndexes:
