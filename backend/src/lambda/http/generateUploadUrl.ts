@@ -2,6 +2,7 @@ import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } from 'aws-lambda'
 import * as AWSXRay from 'aws-xray-sdk'
+import { parseUserId } from '../../auth/utils'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 import * as AWS  from 'aws-sdk'
@@ -19,12 +20,18 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoId = event.pathParameters.todoId
 
   // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const userId = parseUserId(jwtToken)
+
   const uploadUrl = getUploadUrl(todoId)
 
   await docClient.update({
         TableName: todosTable,
         Key: {
-            todoId
+            todoId,
+            userId
         },
         AttributeUpdates: {
             attachmentUrl: {

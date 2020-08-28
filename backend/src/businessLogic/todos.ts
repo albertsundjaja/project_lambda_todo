@@ -23,8 +23,8 @@ export async function createTodo(
     return await todosAccess.createTodo(putTodo)
 }
 
-export async function deleteTodo(todoId) {
-    return await todosAccess.deleteTodo(todoId)
+export async function deleteTodo(todoId, userId) {
+    return await todosAccess.deleteTodo(todoId, userId)
 }
 
 export async function getTodos(userId) {
