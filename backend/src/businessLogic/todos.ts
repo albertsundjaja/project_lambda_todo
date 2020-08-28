@@ -34,3 +34,7 @@ export async function getTodos(userId) {
 export async function updateTodo(todoId, data : TodoUpdate) {
     return await todosAccess.updateTodo(todoId, data)
 }
+
+export async function updateUrl(todoId, userId) {
+    return await todosAccess.updateUrl(todoId, userId)
+}

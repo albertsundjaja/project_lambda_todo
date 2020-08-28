@@ -66,6 +66,8 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+          schema:
+            application/json: ${file(models/create-todo-model.json)}
 
   # TODO: Configure this function
   UpdateTodo:
@@ -76,6 +78,8 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
+          schema:
+            application/json: ${file(models/update-todo-model.json)}
 
   # TODO: Configure this function
   DeleteTodo:

@@ -22,6 +22,19 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   logger.info(`${userId} create todo`)
   
   // TODO: Implement creating a new TODO item
+  if (!newTodo.name) {
+    return {
+      statusCode: 400,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: JSON.stringify({
+        error: "Name cannot be blank"
+      })
+    }
+  }
+  
   const putTodo = await createTodo(newTodo, userId)
 
   return {

@@ -6,6 +6,7 @@ import { TodoItem } from '../models/TodoItem'
 import { TodoUpdate } from '../models/TodoUpdate'
 
 const XAWS = AWSXRay.captureAWS(AWS)
+const bucketName = process.env.IMAGES_S3_BUCKET
 
 export class TodosAccess {
     constructor(
@@ -63,6 +64,22 @@ export class TodosAccess {
                 done: {
                     Action: 'PUT',
                     Value: updatedTodo.done
+                }
+            }
+        }).promise()
+    }
+
+    async updateUrl(todoId, userId) {
+        return await this.docClient.update({
+            TableName: this.todosTable,
+            Key: {
+                todoId,
+                userId
+            },
+            AttributeUpdates: {
+                attachmentUrl: {
+                    Action: 'PUT',
+                    Value: `https://${bucketName}.s3.amazonaws.com/${todoId}`
                 }
             }
         }).promise()
