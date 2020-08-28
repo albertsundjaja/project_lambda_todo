@@ -7,14 +7,10 @@ import { parseUserId } from '../../auth/utils'
 
 import { createLogger } from '../../utils/logger'
 import * as AWSXRay from 'aws-xray-sdk'
+import { getTodos } from '../../businessLogic/todos'
 
 const XAWS = AWSXRay.captureAWS(AWS)
-
 const logger = createLogger('auth')
-
-const docClient = new XAWS.DynamoDB.DocumentClient()
-const todosTable = process.env.TODOS_TABLE
-const userIdIndex = process.env.TODOS_SECONDARY_INDEX
 const cloudwatch = new XAWS.CloudWatch();
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -28,14 +24,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const userId = parseUserId(jwtToken)
   logger.info(`${userId} request todo`)
 
-  const result = await docClient.query({
-    TableName: todosTable,
-    IndexName : userIdIndex,
-    KeyConditionExpression: 'userId = :userId',
-    ExpressionAttributeValues: {
-        ':userId': userId
-    }
-  }).promise()
+  const result = await getTodos(userId)
 
   const endTime = new Date().getTime()
   const totalTime = endTime - startTime
