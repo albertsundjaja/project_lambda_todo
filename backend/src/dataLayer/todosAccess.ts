@@ -46,11 +46,12 @@ export class TodosAccess {
           }).promise()
     }
 
-    async updateTodo(todoId, updatedTodo: TodoUpdate) {
+    async updateTodo(todoId, userId, updatedTodo: TodoUpdate) {
         return await this.docClient.update({
             TableName: this.todosTable,
             Key: {
-                todoId
+                todoId,
+                userId
             },
             AttributeUpdates: {
                 name: {

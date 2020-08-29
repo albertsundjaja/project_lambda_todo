@@ -31,8 +31,8 @@ export async function getTodos(userId) {
     return await todosAccess.getTodos(userId)
 }
 
-export async function updateTodo(todoId, data : TodoUpdate) {
-    return await todosAccess.updateTodo(todoId, data)
+export async function updateTodo(todoId, userId, data : TodoUpdate) {
+    return await todosAccess.updateTodo(todoId, userId, data)
 }
 
 export async function updateUrl(todoId, userId) {
